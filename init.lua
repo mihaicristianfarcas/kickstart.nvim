@@ -205,6 +205,14 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+-- Move current line up or down (Normal Mode)
+vim.keymap.set('n', '˚', ':m .-2<CR>==', { desc = 'Move line up', silent = true })
+vim.keymap.set('n', '∆', ':m .+1<CR>==', { desc = 'Move line down', silent = true })
+
+-- Move selected block up or down (Visual Mode)
+vim.keymap.set('v', '˚', ":m '<-2<CR>gv=gv", { desc = 'Move block up', silent = true })
+vim.keymap.set('v', '∆', ":m '>+1<CR>gv=gv", { desc = 'Move block down', silent = true })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
