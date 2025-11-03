@@ -228,16 +228,19 @@ vim.api.nvim_create_autocmd('TermOpen', {
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
 -- Move current line up or down (Normal Mode)
-vim.keymap.set('n', '˚', ':m .-2<CR>==', { desc = 'Move line up', silent = true })
-vim.keymap.set('n', '∆', ':m .+1<CR>==', { desc = 'Move line down', silent = true })
+vim.keymap.set('n', '<M-up>', ':m .-2<CR>==', { desc = 'Move line up', silent = true })
+vim.keymap.set('n', '<M-down>', ':m .+1<CR>==', { desc = 'Move line down', silent = true })
 
 -- Move selected block up or down (Visual Mode)
-vim.keymap.set('v', '˚', ":m '<-2<CR>gv=gv", { desc = 'Move block up', silent = true })
-vim.keymap.set('v', '∆', ":m '>+1<CR>gv=gv", { desc = 'Move block down', silent = true })
+vim.keymap.set('v', '<M-up>', ":m '<-2<CR>gv=gv", { desc = 'Move block up', silent = true })
+vim.keymap.set('v', '<M-down>', ":m '>+1<CR>gv=gv", { desc = 'Move block down', silent = true })
 
 -- Navigation (Control-U/D) w/ screen centering
 vim.keymap.set('n', '<C-d>', '<C-u>zz', { silent = true })
 vim.keymap.set('n', '<C-d>', '<C-d>zz', { silent = true })
+
+-- Replace with already-copied text
+vim.keymap.set('x', '<leader>p', '"_dP', { desc = 'Replace with copied text', silent = true })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -922,6 +925,7 @@ require('lazy').setup({
     config = function()
       ---@diagnostic disable-next-line: missing-fields
       require('tokyonight').setup {
+        transparent = true,
         styles = {
           comments = { italic = true }, -- Enable italics in comments
         },

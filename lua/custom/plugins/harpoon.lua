@@ -15,7 +15,7 @@ return {
       harpoon:setup()
 
       -- Basic keymaps
-      vim.keymap.set('n', '<leader>a', function()
+      vim.keymap.set('n', '<leader>ha', function()
         harpoon:list():add()
       end, { desc = 'Harpoon: Add file' })
       vim.keymap.set('n', '<C-e>', function()
@@ -23,18 +23,30 @@ return {
       end, { desc = 'Harpoon: Toggle menu' })
 
       -- Optional quick jump bindings
-      vim.keymap.set('n', '1<C-e>', function()
+      vim.keymap.set('n', '<leader>h1', function()
         harpoon:list():select(1)
       end, { desc = 'Harpoon: File 1' })
-      vim.keymap.set('n', '2<C-e>', function()
+      vim.keymap.set('n', '<leader>h2', function()
         harpoon:list():select(2)
       end, { desc = 'Harpoon: File 2' })
-      vim.keymap.set('n', '3<C-e>', function()
+      vim.keymap.set('n', '<leader>h3', function()
         harpoon:list():select(3)
       end, { desc = 'Harpoon: File 3' })
-      vim.keymap.set('n', '4<C-e>', function()
+      vim.keymap.set('n', '<leader>h4', function()
         harpoon:list():select(4)
       end, { desc = 'Harpoon: File 4' })
+      vim.keymap.set('n', '<leader>h5', function()
+        harpoon:list():select(4)
+      end, { desc = 'Harpoon: File 5' })
+      vim.keymap.set('n', '<leader>h5', function()
+        harpoon:list():select(4)
+      end, { desc = 'Harpoon: File 5' })
+      vim.keymap.set('n', '<leader>h5', function()
+        harpoon:list():select(4)
+      end, { desc = 'Harpoon: File 5' })
+      vim.keymap.set('n', '<leader>h5', function()
+        harpoon:list():select(4)
+      end, { desc = 'Harpoon: File 5' })
     end,
   },
 }
