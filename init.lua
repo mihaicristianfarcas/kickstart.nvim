@@ -199,28 +199,6 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
--- FIX: Buffer-local mappings for terminal buffers (covers Terminal-mode and Terminal-Normal-mode)
-vim.api.nvim_create_autocmd('TermOpen', {
-  pattern = 'term://*',
-  callback = function(args)
-    local bufnr = args.buf -- current buffer
-    local opts = { buffer = bufnr, silent = true }
-
-    -- Terminal mode: escape to normal then window-move
-    vim.keymap.set('t', '<C-h>', [[<C-\><C-n><C-w>h]], vim.tbl_extend('force', opts, { desc = 'Term -> left' }))
-    vim.keymap.set('t', '<C-j>', [[<C-\><C-n><C-w>j]], vim.tbl_extend('force', opts, { desc = 'Term -> down' }))
-    vim.keymap.set('t', '<C-k>', [[<C-\><C-n><C-w>k]], vim.tbl_extend('force', opts, { desc = 'Term -> up' }))
-    vim.keymap.set('t', '<C-l>', [[<C-\><C-n><C-w>l]], vim.tbl_extend('force', opts, { desc = 'Term -> right' }))
-
-    -- Normal mode *inside the terminal buffer* (after <C-\><C-n>), map <C-h> to move windows
-    -- This ensures that when the terminal is already in Normal mode, <C-h> still works.
-    vim.keymap.set('n', '<C-h>', '<C-w>h', vim.tbl_extend('force', opts, { desc = 'Term-Normal -> left' }))
-    vim.keymap.set('n', '<C-j>', '<C-w>j', vim.tbl_extend('force', opts, { desc = 'Term-Normal -> down' }))
-    vim.keymap.set('n', '<C-k>', '<C-w>k', vim.tbl_extend('force', opts, { desc = 'Term-Normal -> up' }))
-    vim.keymap.set('n', '<C-l>', '<C-w>l', vim.tbl_extend('force', opts, { desc = 'Term-Normal -> right' }))
-  end,
-})
-
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
@@ -231,9 +209,15 @@ vim.api.nvim_create_autocmd('TermOpen', {
 vim.keymap.set('n', '<M-up>', ':m .-2<CR>==', { desc = 'Move line up', silent = true })
 vim.keymap.set('n', '<M-down>', ':m .+1<CR>==', { desc = 'Move line down', silent = true })
 
+vim.keymap.set('n', '<M-k>', ':m .-2<CR>==', { desc = 'Move line up', silent = true })
+vim.keymap.set('n', '<M-j>', ':m .+1<CR>==', { desc = 'Move line down', silent = true })
+
 -- Move selected block up or down (Visual Mode)
 vim.keymap.set('v', '<M-up>', ":m '<-2<CR>gv=gv", { desc = 'Move block up', silent = true })
 vim.keymap.set('v', '<M-down>', ":m '>+1<CR>gv=gv", { desc = 'Move block down', silent = true })
+
+vim.keymap.set('v', '<M-k>', ":m '<-2<CR>gv=gv", { desc = 'Move block up', silent = true })
+vim.keymap.set('v', '<M-j>', ":m '>+1<CR>gv=gv", { desc = 'Move block down', silent = true })
 
 -- Navigation (Control-U/D) w/ screen centering
 vim.keymap.set('n', '<C-d>', '<C-u>zz', { silent = true })
@@ -1015,7 +999,7 @@ require('lazy').setup({
   --
   require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
-  require 'kickstart.plugins.lint',
+  -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps

@@ -8,20 +8,20 @@ return {
           if term.direction == 'horizontal' then
             return 20
           elseif term.direction == 'vertical' then
-            return vim.o.columns * 0.25
+            return vim.o.columns * 0.3
           end
         end,
         direction = 'vertical',
-        open_mapping = [[<C-\>]],
+        open_mapping = [[<M-\>]],
         shade_terminals = true,
       }
 
-      -- Keymap to open horizontal terminals
-      vim.keymap.set({ 'n', 't' }, '-<C-\\>', '<Cmd>ToggleTerm direction=horizontal<CR>', {
-        desc = 'Open horizontal terminal',
-        noremap = true,
-        silent = true,
-      })
+      -- -- Keymap to open horizontal terminals
+      -- vim.keymap.set({ 'n', 't' }, '-<C-\\>', '<Cmd>ToggleTerm direction=horizontal<CR>', {
+      --   desc = 'Open horizontal terminal',
+      --   noremap = true,
+      --   silent = true,
+      -- })
 
       local Terminal = require('toggleterm.terminal').Terminal
 
@@ -31,7 +31,7 @@ return {
         dir = vim.fn.getcwd(),
         direction = 'float',
         float_opts = {
-          border = 'double',
+          border = 'single',
         },
         on_open = function(term)
           vim.cmd 'startinsert!'
@@ -54,7 +54,7 @@ return {
         dir = vim.fn.getcwd(),
         direction = 'float',
         float_opts = {
-          border = 'double',
+          border = 'single',
         },
         on_open = function(term)
           vim.cmd 'startinsert!'
