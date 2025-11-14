@@ -1038,3 +1038,22 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+-- Auto-reload files changed outside of Neovim
+vim.o.autoread = true
+
+-- Force check for file changes
+vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'TermEnter', 'TermLeave', 'CursorHold', 'CursorHoldI' }, {
+  callback = function()
+    if vim.fn.mode() ~= 'c' then -- not in command-line mode
+      vim.api.nvim_command 'checktime'
+    end
+  end,
+})
+
+-- Notification when file reloads
+vim.api.nvim_create_autocmd('FileChangedShellPost', {
+  callback = function()
+    vim.api.nvim_echo({ { 'File reloaded (changed externally)', 'WarningMsg' } }, true, {})
+  end,
+})
