@@ -1045,7 +1045,7 @@ vim.o.autoread = true
 -- Force check for file changes
 vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'TermEnter', 'TermLeave', 'CursorHold', 'CursorHoldI' }, {
   callback = function()
-    if vim.fn.mode() ~= 'c' then -- not in command-line mode
+    if vim.fn.mode() ~= 'c' and vim.fn.getcmdwintype() == '' then -- not in command-line mode or window
       vim.api.nvim_command 'checktime'
     end
   end,
