@@ -12,7 +12,7 @@ return {
           end
         end,
         direction = 'vertical',
-        open_mapping = [[<M-\>]],
+        open_mapping = [[<C-\>]],
         shade_terminals = true,
       }
 
