@@ -226,6 +226,27 @@ vim.keymap.set('n', '<C-d>', '<C-d>zz', { silent = true })
 -- Replace with already-copied text
 vim.keymap.set('x', '<leader>p', '"_dP', { desc = 'Replace with copied text', silent = true })
 
+-- Copy selection keymap
+vim.keymap.set({ 'n', 'v' }, '<leader>sc', function()
+  local filepath = vim.fn.expand '%' -- full path
+  local start_line = vim.fn.line '.'
+  local end_line = vim.fn.line 'v' -- last visual selection line
+  local text
+
+  if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' or vim.fn.mode() == '\22' then
+    start_line = vim.fn.line 'v'
+    end_line = vim.fn.line '.'
+    if start_line > end_line then
+      start_line, end_line = end_line, start_line
+    end
+    text = string.format('%s:%d-%d', filepath, start_line, end_line)
+  else
+    text = string.format('%s:%d', filepath, start_line)
+  end
+  vim.fn.setreg('+', text) -- copy to clipboard
+  vim.notify('Copied: ' .. text, vim.log.levels.INFO)
+end, { desc = '[S]election [C]opy (file path with line number/range)' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
