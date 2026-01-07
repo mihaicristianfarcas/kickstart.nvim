@@ -13,7 +13,7 @@ return {
         end,
         direction = 'vertical',
         open_mapping = [[<C-\>]],
-        shade_terminals = true,
+        shade_terminals = false,
       }
 
       -- -- Keymap to open horizontal terminals

@@ -1077,3 +1077,19 @@ vim.api.nvim_create_autocmd('FileChangedShellPost', {
     vim.api.nvim_echo({ { 'File reloaded (changed externally)', 'WarningMsg' } }, true, {})
   end,
 })
+
+-- Function to clear backgrounds
+local function set_transparent_bg()
+  local groups = { 'Normal', 'NormalNC', 'SignColumn', 'NormalFloat', 'FloatBorder' }
+  for _, group in ipairs(groups) do
+    vim.api.nvim_set_hl(0, group, { bg = 'none', ctermbg = 'none' })
+  end
+end
+
+-- Apply transparency
+set_transparent_bg()
+
+-- Ensure transparency stays active when switching colorschemes
+vim.api.nvim_create_autocmd('ColorScheme', {
+  callback = set_transparent_bg,
+})
