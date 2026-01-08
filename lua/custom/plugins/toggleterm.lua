@@ -16,13 +16,6 @@ return {
         shade_terminals = false,
       }
 
-      -- -- Keymap to open horizontal terminals
-      -- vim.keymap.set({ 'n', 't' }, '-<C-\\>', '<Cmd>ToggleTerm direction=horizontal<CR>', {
-      --   desc = 'Open horizontal terminal',
-      --   noremap = true,
-      --   silent = true,
-      -- })
-
       local Terminal = require('toggleterm.terminal').Terminal
 
       -- Custom lazygit terminal
