@@ -222,11 +222,11 @@ require('lazy').setup({
         }
       end, { desc = '[S]earch [/] in Open Files' })
 
-      -- Search Neovim config files (including hidden directories for stow compatibility)
+      -- Search Neovim config files
       vim.keymap.set('n', '<leader>sn', function()
         builtin.find_files {
           cwd = vim.fn.stdpath 'config',
-          hidden = true,
+          -- hidden = true,
           no_ignore = false,
         }
       end, { desc = '[S]earch [N]eovim files' })
