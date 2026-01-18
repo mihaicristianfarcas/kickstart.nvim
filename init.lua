@@ -459,6 +459,8 @@ require('lazy').setup({
 
   {
     'nvim-treesitter/nvim-treesitter',
+    -- Pin to v0.9.2 for compatibility with nvim-treesitter-textobjects (which needs nvim-treesitter.configs)
+    version = 'v0.9.2',
     build = ':TSUpdate',
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
