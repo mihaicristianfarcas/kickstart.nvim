@@ -459,18 +459,18 @@ require('lazy').setup({
 
   {
     'nvim-treesitter/nvim-treesitter',
-    -- Pin to v0.9.2 for compatibility with nvim-treesitter-textobjects (which needs nvim-treesitter.configs)
-    version = 'v0.9.2',
     build = ':TSUpdate',
-    opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
-      auto_install = true,
-      highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = true, disable = { 'ruby' } },
-    },
+    config = function()
+      -- Install parsers
+      require('nvim-treesitter.install').prefer_git = true
+      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+      for _, parser in ipairs(parsers) do
+        local ok, _ = pcall(vim.treesitter.language.add, parser)
+        if not ok then
+          vim.cmd('TSInstall ' .. parser)
+        end
+      end
+    end,
   },
 
   require 'kickstart.plugins.debug',
