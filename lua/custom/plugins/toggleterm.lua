@@ -16,11 +16,11 @@ return {
         shade_terminals = false,
       }
 
-      -- Toggle terminal in normal, insert, and terminal modes
-      local toggle_term = '<cmd>ToggleTerm<CR>'
-      vim.keymap.set('n', '<C-\\>', toggle_term, { desc = 'Toggle terminal', silent = true })
-      vim.keymap.set('i', '<C-\\>', toggle_term, { desc = 'Toggle terminal', silent = true })
-      vim.keymap.set('t', '<C-\\>', toggle_term, { desc = 'Toggle terminal', silent = true })
+      -- -- Toggle terminal in normal, insert, and terminal modes
+      -- local toggle_term = '<cmd>ToggleTerm<CR>'
+      -- vim.keymap.set('n', '<C-\\>', toggle_term, { desc = 'Toggle terminal', silent = true })
+      -- vim.keymap.set('i', '<C-\\>', toggle_term, { desc = 'Toggle terminal', silent = true })
+      -- vim.keymap.set('t', '<C-\\>', toggle_term, { desc = 'Toggle terminal', silent = true })
 
       local Terminal = require('toggleterm.terminal').Terminal
 
