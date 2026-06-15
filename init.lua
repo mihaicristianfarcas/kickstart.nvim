@@ -165,6 +165,7 @@ require('lazy').setup({
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>g', group = '[G]it' },
         { '<leader>x', group = 'Diagnostics' },
+        { '<leader>S', group = '[S]ession' },
       },
     },
   },
@@ -252,7 +253,7 @@ require('lazy').setup({
   {
     'neovim/nvim-lspconfig',
     dependencies = {
-      { 'mason-org/mason.nvim', opts = {} },
+      { 'mason-org/mason.nvim', opts = { ui = { border = 'rounded' } } },
       'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
       { 'j-hui/fidget.nvim', opts = {} },
@@ -319,7 +320,7 @@ require('lazy').setup({
           -- Toggle inlay hints
           if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
             map('<leader>th', function()
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
+              vim.lsp.inlay_hint.enable(vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, '[T]oggle Inlay [H]ints')
           end
         end,
@@ -358,11 +359,23 @@ require('lazy').setup({
             },
           },
         },
+        gopls = {},
+        pyright = {},
+        clangd = {},
+        -- Rust is handled by rustaceanvim (see lua/custom/plugins/rustaceanvim.lua)
       }
 
-      -- Tools to ensure installed via mason-tool-installer
+      -- Tools to ensure installed via mason-tool-installer (LSPs + formatters + linters)
       local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, { 'stylua' })
+      vim.list_extend(ensure_installed, {
+        'stylua', -- Lua formatter
+        'goimports', -- Go imports/format
+        'gofumpt', -- Go stricter formatter
+        'golangci-lint', -- Go linter
+        'ruff', -- Python formatter + linter
+        'clang-format', -- C/C++ formatter
+        'markdownlint', -- Markdown linter
+      })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
@@ -396,7 +409,7 @@ require('lazy').setup({
     opts = {
       notify_on_error = false,
       format_on_save = function(bufnr)
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = {}
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         end
@@ -406,6 +419,10 @@ require('lazy').setup({
         lua = { 'stylua' },
         javascript = { 'biome' },
         typescript = { 'biome' },
+        go = { 'goimports', 'gofumpt' },
+        python = { 'ruff_organize_imports', 'ruff_format' },
+        c = { 'clang-format' },
+        cpp = { 'clang-format' },
       },
     },
   },
@@ -469,7 +486,7 @@ require('lazy').setup({
     config = function()
       -- Install parsers
       require('nvim-treesitter.install').prefer_git = true
-      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'rust', 'toml', 'go', 'gomod', 'gosum', 'python' }
       for _, parser in ipairs(parsers) do
         local ok, _ = pcall(vim.treesitter.language.add, parser)
         if not ok then
@@ -486,6 +503,7 @@ require('lazy').setup({
   { import = 'custom.plugins' },
 }, {
   ui = {
+    border = 'rounded',
     icons = vim.g.have_nerd_font and {} or {
       cmd = '⌘',
       config = '🛠',
@@ -546,3 +564,6 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 vim.api.nvim_create_autocmd('VimEnter', {
   callback = set_transparent_bg,
 })
+
+-- Add border to all windows
+vim.o.winborder = 'rounded'
