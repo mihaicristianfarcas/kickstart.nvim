@@ -448,7 +448,7 @@ require('lazy').setup({
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
     opts = {
-      keymap = { preset = 'default' },
+      keymap = { preset = 'super-tab' },
 
       appearance = { nerd_font_variant = 'mono' },
       completion = { documentation = { auto_show = true, auto_show_delay_ms = 500 } },
@@ -486,7 +486,25 @@ require('lazy').setup({
     config = function()
       -- Install parsers
       require('nvim-treesitter.install').prefer_git = true
-      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'rust', 'toml', 'go', 'gomod', 'gosum', 'python' }
+      local parsers = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'rust',
+        'toml',
+        'go',
+        'gomod',
+        'gosum',
+        'python',
+      }
       for _, parser in ipairs(parsers) do
         local ok, _ = pcall(vim.treesitter.language.add, parser)
         if not ok then
