@@ -12,7 +12,11 @@ return {
           end
         end,
         direction = 'vertical',
-        open_mapping = [[<C-\>]],
+        open_mapping = [[<leader>\]],
+        -- Only map in normal/insert modes; keep terminal mode free so <Space>\
+        -- isn't intercepted while typing. Close from inside a terminal with
+        -- <Esc><Esc> (to normal mode) then <leader>\.
+        terminal_mappings = false,
         shade_terminals = false,
       }
 
@@ -24,7 +28,7 @@ return {
         dir = vim.fn.getcwd(),
         direction = 'float',
         float_opts = {
-          border = 'single',
+          border = 'rounded',
         },
         on_open = function(term)
           vim.cmd 'startinsert!'
@@ -47,7 +51,7 @@ return {
         dir = vim.fn.getcwd(),
         direction = 'float',
         float_opts = {
-          border = 'single',
+          border = 'rounded',
         },
         on_open = function(term)
           vim.cmd 'startinsert!'

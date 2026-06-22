@@ -107,10 +107,12 @@ return {
     end, { desc = '99: [S]earch project (read-only) → quickfix' })
 
     --- vibe: like search, but the agent actually implements the change and
-    --- reports what it touched into the quickfix list
-    vim.keymap.set('n', '<leader>9v', function()
+    --- reports what it touched into the quickfix list.
+    --- Mapped to <leader>9c ([C]ode) so it doesn't collide with the visual-mode
+    --- <leader>9v (replace [V]isual selection) above.
+    vim.keymap.set('n', '<leader>9c', function()
       _99.vibe()
-    end, { desc = '99: [V]ibe — implement change + report to quickfix' })
+    end, { desc = '99: vibe — implement [C]ode change + report to quickfix' })
 
     --- open: reopen the last interaction's result (qfix for search/vibe)
     vim.keymap.set('n', '<leader>9o', function()

@@ -37,11 +37,9 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
--- Split navigation with CTRL+<hjkl>
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+-- Split navigation with CTRL+<hjkl> is handled by vim-tmux-navigator
+-- (see lua/custom/plugins/vim-tmux-navigator.lua), which also integrates with
+-- tmux panes and falls back to plain window navigation outside tmux.
 
 -- Move lines up/down
 vim.keymap.set('n', '<M-up>', ':m .-2<CR>==', { desc = 'Move line up', silent = true })
@@ -166,6 +164,9 @@ require('lazy').setup({
         { '<leader>g', group = '[G]it' },
         { '<leader>x', group = 'Diagnostics' },
         { '<leader>S', group = '[S]ession' },
+        { '<leader>l', group = '[L]azygit/Docker' },
+        { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
+        { 'gs', group = '[S]urround', mode = { 'n', 'x' } },
       },
     },
   },
@@ -448,7 +449,7 @@ require('lazy').setup({
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
     opts = {
-      keymap = { preset = 'super-tab' },
+      keymap = { preset = 'default' },
 
       appearance = { nerd_font_variant = 'mono' },
       completion = { documentation = { auto_show = true, auto_show_delay_ms = 500 } },
@@ -470,7 +471,25 @@ require('lazy').setup({
     'echasnovski/mini.nvim',
     config = function()
       require('mini.ai').setup { n_lines = 500 }
-      require('mini.surround').setup()
+
+      -- Surround moved off the bare `s` prefix to `gs` so it doesn't clash with
+      -- flash.nvim's `s` jump. e.g. gsaiw) to surround, gsd) to delete, gsr)( to replace.
+      require('mini.surround').setup {
+        mappings = {
+          add = 'gsa',
+          delete = 'gsd',
+          find = 'gsf',
+          find_left = 'gsF',
+          highlight = 'gsh',
+          replace = 'gsr',
+          update_n_lines = 'gsn',
+        },
+      }
+
+      -- Commenting (gc / gcc). Replaces numToStr/Comment.nvim, whose treesitter
+      -- commentstring path is broken on Neovim 0.11+ (threw "[Comment.nvim] nil").
+      require('mini.comment').setup()
+
       local statusline = require 'mini.statusline'
       statusline.setup { use_icons = vim.g.have_nerd_font }
       ---@diagnostic disable-next-line: duplicate-set-field
