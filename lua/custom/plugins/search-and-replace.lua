@@ -1,3 +1,7 @@
+-- nvim-search-and-replace: project-wide find & replace UI (ripgrep-backed).
+--   <leader>sar  open the search & replace panel
+--   <leader>saw  search & replace the word/selection under the cursor
+-- The `keymap` table below rebinds keys used *inside* the panel, not globally.
 return {
   {
     'mihaicristianfarcas/nvim-search-and-replace',

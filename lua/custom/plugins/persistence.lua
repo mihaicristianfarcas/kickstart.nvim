@@ -1,3 +1,6 @@
+-- persistence.nvim: save and restore editing sessions (open buffers, layout)
+-- per working directory and git branch. Sessions are saved automatically; the
+-- keymaps under <leader>S... restore or manage them.
 return {
   'folke/persistence.nvim',
   event = 'BufReadPre', -- only start session saving once an actual file is opened

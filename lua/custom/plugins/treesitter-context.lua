@@ -1,5 +1,7 @@
--- Textobjects using mini.ai (nvim-treesitter-textobjects is deprecated for Neovim 0.11+)
--- The textobjects functionality is now handled by mini.ai with treesitter integration
+-- treesitter-context.nvim: pins the enclosing scope (function/class/etc.) to the
+-- top of the window as you scroll, so you always see where you are.
+--   <leader>tc  toggle the context on/off
+--   [x          jump up to the context line
 return {
   {
     'nvim-treesitter/nvim-treesitter-context',

@@ -1,3 +1,6 @@
+-- trouble.nvim: a pretty, navigable list for diagnostics, symbols, references,
+-- and the quickfix/location lists. All entry points are under <leader>x...;
+-- ]d / [d jump to the next/previous diagnostic (skipping grouped duplicates).
 return {
   'folke/trouble.nvim',
   dependencies = { 'nvim-tree/nvim-web-devicons' },

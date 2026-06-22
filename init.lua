@@ -1,35 +1,55 @@
--- Leader key must be set before plugins load
+-- ============================================================================
+-- init.lua — entry point. Loaded by Neovim on startup.
+--
+-- Layout:
+--   1. Globals & leader        (this section)
+--   2. [[ Options ]]           editor behaviour (vim.o / vim.opt)
+--   3. [[ Basic Keymaps ]]     non-plugin keymaps + helpers
+--   4. [[ Autocommands ]]      yank-highlight and friends
+--   5. [[ Lazy.nvim ]]         bootstrap + the plugin list
+--   6. Tail autocommands       auto-reload, transparent background, borders
+--
+-- Plugins live in two places:
+--   - Inline in the require('lazy').setup({...}) call below (core editor stack).
+--   - One file per plugin under lua/custom/plugins/, auto-imported at the end
+--     of the list via { import = 'custom.plugins' }.
+--
+-- Leader is <Space>. Press it and wait to let which-key show what's available.
+-- ============================================================================
+
+-- Leader key must be set before plugins load (so plugin mappings see <Space>)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = true
 
 -- [[ Options ]]
 
-vim.o.number = true
-vim.o.relativenumber = true
-vim.o.mouse = 'a'
-vim.o.showmode = false
+vim.o.number = true -- absolute number on the cursor line
+vim.o.relativenumber = true -- relative numbers elsewhere (easy {count}j/k)
+vim.o.mouse = 'a' -- mouse enabled in all modes
+vim.o.showmode = false -- mode is shown in the statusline instead
 
--- Sync clipboard (scheduled for faster startup)
+-- Use the system clipboard for all yanks/pastes. Scheduled so it doesn't slow
+-- startup (clipboard providers can be expensive to probe).
 vim.schedule(function()
   vim.o.clipboard = 'unnamedplus'
 end)
 
-vim.o.breakindent = true
-vim.o.undofile = true
-vim.o.ignorecase = true
-vim.o.smartcase = true
-vim.o.signcolumn = 'yes'
-vim.o.updatetime = 250
-vim.o.timeoutlen = 300
-vim.o.splitright = true
-vim.o.splitbelow = true
-vim.o.list = true
+vim.o.breakindent = true -- wrapped lines keep their indent
+vim.o.undofile = true -- persist undo history across sessions
+vim.o.ignorecase = true -- case-insensitive search...
+vim.o.smartcase = true -- ...unless the query contains an uppercase letter
+vim.o.signcolumn = 'yes' -- always show the sign column (no text jitter)
+vim.o.updatetime = 250 -- ms of idle before CursorHold / swap write
+vim.o.timeoutlen = 300 -- ms to wait for a mapped sequence to complete
+vim.o.splitright = true -- vertical splits open to the right
+vim.o.splitbelow = true -- horizontal splits open below
+vim.o.list = true -- render whitespace using listchars below
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
-vim.o.inccommand = 'split'
-vim.o.cursorline = true
-vim.o.scrolloff = 10
-vim.o.confirm = true
+vim.o.inccommand = 'split' -- live preview of :substitute in a split
+vim.o.cursorline = true -- highlight the current line
+vim.o.scrolloff = 10 -- keep 10 lines of context above/below the cursor
+vim.o.confirm = true -- prompt to save instead of failing on :q with changes
 
 -- [[ Basic Keymaps ]]
 
@@ -105,6 +125,9 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
 
+  -- Git change signs in the gutter (+ / ~ / _). The hunk-staging keymaps
+  -- (<leader>h..., ]c/[c) are added separately in lua/kickstart/plugins/gitsigns.lua;
+  -- this block only sets the sign characters.
   {
     'lewis6991/gitsigns.nvim',
     opts = {
@@ -118,6 +141,9 @@ require('lazy').setup({
     },
   },
 
+  -- which-key: after pressing a prefix (e.g. <Space>) a popup lists the
+  -- available follow-up keys. The `spec` at the bottom names the leader groups
+  -- so they read as words ("[S]earch") instead of a bare letter.
   {
     'folke/which-key.nvim',
     event = 'VimEnter',
@@ -157,20 +183,26 @@ require('lazy').setup({
         },
       },
 
+      -- Leader-prefix group labels. Add a line here whenever a new <leader>X...
+      -- family of mappings is introduced so the which-key popup stays readable.
       spec = {
-        { '<leader>s', group = '[S]earch' },
-        { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
-        { '<leader>g', group = '[G]it' },
-        { '<leader>x', group = 'Diagnostics' },
-        { '<leader>S', group = '[S]ession' },
-        { '<leader>l', group = '[L]azygit/Docker' },
-        { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
-        { 'gs', group = '[S]urround', mode = { 'n', 'x' } },
+        { '<leader>s', group = '[S]earch' }, -- telescope pickers
+        { '<leader>t', group = '[T]oggle' }, -- toggles (inlay hints, blame, context)
+        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } }, -- gitsigns
+        { '<leader>g', group = '[G]it' }, -- diffview
+        { '<leader>x', group = 'Diagnostics' }, -- trouble
+        { '<leader>S', group = '[S]ession' }, -- persistence
+        { '<leader>l', group = '[L]azygit/Docker' }, -- toggleterm floats
+        { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } }, -- LSP/rust code actions
+        { 'gs', group = '[S]urround', mode = { 'n', 'x' } }, -- mini.surround (non-leader)
       },
     },
   },
 
+  -- Telescope: fuzzy finder for files, live grep, help, keymaps, LSP symbols,
+  -- diagnostics, etc. All pickers are bound under <leader>s... (+ <leader><leader>
+  -- for buffers and <leader>/ for the current buffer). fzf-native speeds up
+  -- sorting; ui-select routes vim.ui.select (e.g. code actions) through Telescope.
   {
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
@@ -242,6 +274,9 @@ require('lazy').setup({
   },
 
   -- LSP Plugins
+
+  -- lazydev: makes the Lua language server understand the Neovim runtime, so
+  -- editing this config gets completion/docs for the `vim.*` API. Lua files only.
   {
     'folke/lazydev.nvim',
     ft = 'lua',
@@ -251,6 +286,11 @@ require('lazy').setup({
       },
     },
   },
+
+  -- LSP: nvim-lspconfig wires up language servers. Mason installs the servers
+  -- and CLI tools (formatters/linters); mason-lspconfig auto-installs a server
+  -- when you open a matching filetype; blink.cmp supplies completion capabilities.
+  -- The `servers` table below is the list to configure — add an entry to enable one.
   {
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -261,7 +301,9 @@ require('lazy').setup({
       'saghen/blink.cmp',
     },
     config = function()
-      -- LSP attach handler
+      -- Runs every time a language server attaches to a buffer. Everything here
+      -- is buffer-local, so these keymaps only exist where an LSP is active.
+      -- Mnemonic: most LSP actions live under `gr` (goto/refactor).
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
         callback = function(event)
@@ -393,6 +435,9 @@ require('lazy').setup({
     end,
   },
 
+  -- conform: runs external formatters. Formats on save (per-filetype list in
+  -- `formatters_by_ft`) and on demand with <leader>f. Falls back to the LSP
+  -- formatter when no dedicated formatter is configured for the filetype.
   {
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
@@ -428,6 +473,9 @@ require('lazy').setup({
     },
   },
 
+  -- blink.cmp: the completion engine (the popup as you type). Sources are LSP,
+  -- file paths, snippets (LuaSnip), and lazydev. `preset = 'default'` keeps the
+  -- stock keys: <C-y> accept, <C-n>/<C-p> or arrows to cycle, <C-space> toggle.
   {
     'saghen/blink.cmp',
     event = 'VimEnter',
@@ -465,15 +513,23 @@ require('lazy').setup({
     },
   },
 
+  -- Highlights and lists TODO/FIXME/HACK/NOTE comments. (signs off = no gutter icons.)
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
+  -- mini.nvim: a collection of small modules. Only the four set up below are
+  -- enabled; each `require('mini.x').setup` is independent.
   {
     'echasnovski/mini.nvim',
     config = function()
+      -- mini.ai: smarter a/i text objects (e.g. around/inside function, argument,
+      -- quotes). n_lines caps how far it searches for a matching pair.
       require('mini.ai').setup { n_lines = 500 }
 
-      -- Surround moved off the bare `s` prefix to `gs` so it doesn't clash with
-      -- flash.nvim's `s` jump. e.g. gsaiw) to surround, gsd) to delete, gsr)( to replace.
+      -- mini.surround: add/delete/replace surrounding pairs, under the `gs` prefix
+      -- (the bare `s` is left to flash.nvim's jump). Examples:
+      --   gsaiw)  surround inner-word with parentheses
+      --   gsd)    delete surrounding parentheses
+      --   gsr)(   replace surrounding ) with (
       require('mini.surround').setup {
         mappings = {
           add = 'gsa',
@@ -486,10 +542,12 @@ require('lazy').setup({
         },
       }
 
-      -- Commenting (gc / gcc). Replaces numToStr/Comment.nvim, whose treesitter
-      -- commentstring path is broken on Neovim 0.11+ (threw "[Comment.nvim] nil").
+      -- mini.comment: toggle comments with `gc` (operator/visual) and `gcc`
+      -- (current line). Uses each filetype's commentstring.
       require('mini.comment').setup()
 
+      -- mini.statusline: the statusline. The override makes the location section
+      -- read as LINE:COLUMN with fixed width.
       local statusline = require 'mini.statusline'
       statusline.setup { use_icons = vim.g.have_nerd_font }
       ---@diagnostic disable-next-line: duplicate-set-field
@@ -499,11 +557,14 @@ require('lazy').setup({
     end,
   },
 
+  -- Treesitter: builds a syntax tree per buffer, powering accurate highlighting,
+  -- indentation, and the text objects/motions in treesitter-textobjects.nvim.
+  -- Add a language to the `parsers` list to have its parser installed on startup.
   {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     config = function()
-      -- Install parsers
+      -- Ensure each parser is available; install it on the fly if missing.
       require('nvim-treesitter.install').prefer_git = true
       local parsers = {
         'bash',
@@ -533,10 +594,13 @@ require('lazy').setup({
     end,
   },
 
-  require 'kickstart.plugins.debug',
-  require 'kickstart.plugins.autopairs',
-  require 'kickstart.plugins.gitsigns',
+  -- Plugin specs kept in their own files under lua/kickstart/plugins/.
+  require 'kickstart.plugins.debug', -- nvim-dap debugging (F-keys, <leader>b)
+  require 'kickstart.plugins.autopairs', -- auto-close brackets/quotes
+  require 'kickstart.plugins.gitsigns', -- gitsigns hunk keymaps (see note above)
 
+  -- Auto-import every file in lua/custom/plugins/. This is where personal
+  -- plugins live — drop a new `name.lua` returning a lazy spec and it loads.
   { import = 'custom.plugins' },
 }, {
   ui = {
@@ -559,7 +623,9 @@ require('lazy').setup({
   },
 })
 
--- Auto-reload files changed outside Neovim
+-- Auto-reload files changed on disk outside Neovim (e.g. by git or a formatter).
+-- `checktime` re-reads the file if it changed and the buffer has no edits; the
+-- guard skips it while in command-line mode / the cmdline window.
 vim.o.autoread = true
 vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'TermEnter', 'TermLeave', 'CursorHold', 'CursorHoldI' }, {
   callback = function()
@@ -569,13 +635,16 @@ vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'TermEnter', 'TermLeave
   end,
 })
 
+-- Notify when a buffer was reloaded because the file changed externally.
 vim.api.nvim_create_autocmd('FileChangedShellPost', {
   callback = function()
     vim.api.nvim_echo({ { 'File reloaded (changed externally)', 'WarningMsg' } }, true, {})
   end,
 })
 
--- Transparent background setup
+-- Transparent background: clear the background of the core highlight groups so
+-- the terminal's own background (and any transparency) shows through. Re-applied
+-- on every colorscheme change and once on startup.
 local function set_transparent_bg()
   local groups = {
     'Normal',
@@ -602,5 +671,5 @@ vim.api.nvim_create_autocmd('VimEnter', {
   callback = set_transparent_bg,
 })
 
--- Add border to all windows
+-- Default rounded border for all floating windows (hovers, diagnostics, etc.).
 vim.o.winborder = 'rounded'

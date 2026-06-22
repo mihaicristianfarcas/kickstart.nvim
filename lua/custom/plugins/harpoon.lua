@@ -1,7 +1,7 @@
--- You can add your own plugins here or in other files in this directory!
--- I promise not to create any merge conflicts in this directory :)
---
--- See the kickstart.nvim README for more information
+-- harpoon: pin a handful of files and jump between them instantly.
+--   <leader>a    add the current file to the list
+--   <leader>e    toggle the quick-menu (edit/reorder the list)
+--   <leader>1-4  jump straight to file 1-4
 return {
   {
     'ThePrimeagen/harpoon',

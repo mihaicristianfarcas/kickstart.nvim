@@ -1,3 +1,7 @@
+-- NOT LOADED: this file isn't imported in init.lua, so nvim-lint is inactive.
+-- Diagnostics currently come from the LSP servers (and ruff for Python).
+-- To enable standalone linting, add `require 'kickstart.plugins.lint',` to the
+-- plugin list in init.lua.
 return {
 
   { -- Linting

@@ -1,3 +1,8 @@
+-- windows.nvim: smooth window resizing helpers.
+--   <C-w>z  maximize the current window
+--   <C-w>=  equalize all windows
+-- autowidth (auto-grow the focused window) is disabled; the ignore lists keep it
+-- from fighting with file explorers, quickfix, and terminals.
 return {
   {
     'anuvyklack/windows.nvim',

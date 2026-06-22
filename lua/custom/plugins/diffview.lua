@@ -1,3 +1,7 @@
+-- diffview.nvim: full-window git diff and file-history views.
+--   <leader>gd  open diff of working tree     <leader>gc  close the diff view
+--   <leader>gh  history of the current file   <leader>gH  history of the whole repo
+--   <leader>gm  diff against the last commit (HEAD~1)
 return {
   'sindrets/diffview.nvim',
   dependencies = { 'nvim-lua/plenary.nvim' },

@@ -1,3 +1,8 @@
+-- toggleterm.nvim: persistent, toggleable terminals.
+--   <leader>\   toggle the main terminal (opens as a vertical split)
+--   <leader>lg  floating lazygit       <leader>ld  floating lazydocker
+-- Inside a terminal, <Esc><Esc> returns to normal mode; from there <leader>\
+-- toggles it closed. In the lazygit/lazydocker floats, `q` closes the window.
 return {
   {
     'akinsho/toggleterm.nvim',

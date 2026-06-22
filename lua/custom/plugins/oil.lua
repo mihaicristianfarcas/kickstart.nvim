@@ -1,3 +1,6 @@
+-- oil.nvim: browse and edit the filesystem as if it were a normal buffer.
+-- `-` opens the parent directory; then edit the listing (rename/delete/create
+-- lines) and `:w` to apply the changes to disk.
 return {
   {
     'stevearc/oil.nvim',
