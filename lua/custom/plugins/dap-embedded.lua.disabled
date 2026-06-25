@@ -1,0 +1,166 @@
+return {
+  "mfussenegger/nvim-dap",
+  optional = true,
+  config = function()
+    local dap = require("dap")
+
+    local chip = "STM32G474RETx"
+
+    -- IMPORTANT: nvim-dap has no setup(), so kickstart does all DAP config inside
+    -- its own nvim-dap `config` (lua/kickstart/plugins/debug.lua). lazy.nvim runs
+    -- only ONE `config` per plugin (last fragment wins), and THIS file's config
+    -- wins -- so debug.lua's config never runs. This file is therefore the
+    -- authoritative DAP config; dap-ui must be set up here too, otherwise it
+    -- stays on its defaults (controls.enabled = true) and require('dapui').toggle()
+    -- crashes in dap-ui v4.0.0 at controls.lua:14 ("attempt to index local
+    -- 'element' (a nil value)") because the winbar controls dereference an
+    -- element that isn't registered yet.
+    local dapui = require("dapui")
+    dapui.setup({ controls = { enabled = false } })
+    -- Auto open/close the UI with the session (kickstart intended this, but its
+    -- listeners no longer run). Remove these three lines if you prefer to only
+    -- open the UI manually via the F7 toggle.
+    dap.listeners.after.event_initialized["dapui_config"] = dapui.open
+    dap.listeners.before.event_terminated["dapui_config"] = dapui.close
+    dap.listeners.before.event_exited["dapui_config"] = dapui.close
+
+    -- Pick the binary to flash/debug, building it first.
+    --
+    -- nvim-dap resolves config values inside a coroutine (see eval_option /
+    -- expand_config_variables in dap.lua), so this function may do async work and
+    -- yield. It:
+    --   1. takes the focused buffer (must be a *.rs file) -> binary name,
+    --   2. finds the Cargo package root above that file (not getcwd(), which is
+    --      what made the old version depend on where nvim happened to be),
+    --   3. runs `cargo build --bin <name>` and reads the exact ELF path from
+    --      cargo's JSON output -- so there is no hardcoded target triple or debug
+    --      directory, and we never flash a missing/stale binary,
+    --   4. aborts the launch (dap.ABORT) with a readable message on any failure.
+    local function build_and_resolve()
+      local src = vim.api.nvim_buf_get_name(0)
+      if not src:match("%.rs$") then
+        vim.schedule(function()
+          vim.notify("Focus the src/bin/<name>.rs you want to debug before launching", vim.log.levels.ERROR)
+        end)
+        return dap.ABORT
+      end
+      local bin = vim.fn.fnamemodify(src, ":t:r")
+
+      local manifest = vim.fs.find("Cargo.toml", { upward = true, path = vim.fs.dirname(src) })[1]
+      if not manifest then
+        vim.schedule(function()
+          vim.notify("No Cargo.toml found above " .. src, vim.log.levels.ERROR)
+        end)
+        return dap.ABORT
+      end
+      local root = vim.fs.dirname(manifest)
+
+      local co = assert(coroutine.running(), "build_and_resolve must run in nvim-dap's coroutine")
+      vim.notify("Building " .. bin .. " ...")
+      vim.system(
+        { "cargo", "build", "--bin", bin, "--message-format=json" },
+        { cwd = root, text = true },
+        function(out)
+          local exe, diagnostics = nil, {}
+          for line in vim.gsplit(out.stdout or "", "\n", { trimempty = true }) do
+            local ok, msg = pcall(vim.json.decode, line)
+            if ok and type(msg) == "table" then
+              if msg.reason == "compiler-artifact" and msg.executable and msg.target and msg.target.name == bin then
+                exe = msg.executable
+              elseif msg.reason == "compiler-message" and msg.message and msg.message.rendered then
+                diagnostics[#diagnostics + 1] = msg.message.rendered
+              end
+            end
+          end
+          -- vim.system's callback runs in a fast event; resume on the main loop.
+          vim.schedule(function()
+            coroutine.resume(co, (out.code == 0) and exe or nil, table.concat(diagnostics, "\n"), out.stderr)
+          end)
+        end
+      )
+
+      local exe, diagnostics, stderr = coroutine.yield()
+      if not exe then
+        local detail = (diagnostics ~= "" and diagnostics) or stderr or "see :messages"
+        vim.schedule(function()
+          vim.notify("cargo build failed for " .. bin .. ":\n" .. detail, vim.log.levels.ERROR)
+        end)
+        return dap.ABORT
+      end
+      return exe
+    end
+
+    -- "${port}" makes nvim-dap pick a free port and substitute it into the args,
+    -- so a leftover dap-server can never block the next session on a fixed port.
+    dap.adapters.probe_rs = {
+      type = "server",
+      port = "${port}",
+      executable = {
+        command = "probe-rs",
+        args = { "dap-server", "--port", "${port}" },
+      },
+    }
+
+    dap.configurations.rust = {
+      {
+        name = "Flash + Debug (STM32G474RE)",
+        type = "probe_rs",
+        request = "launch",
+        chip = chip,
+        flashingConfig = {
+          flashingEnabled = true,
+          haltAfterReset = true,
+        },
+        coreConfigs = {
+          {
+            coreIndex = 0,
+            programBinary = build_and_resolve,
+          },
+        },
+      },
+    }
+
+    -- :DapTerminate sends `disconnect { terminateDebuggee = true }`, which makes
+    -- probe-rs *halt* the core (no OS process to kill on an MCU) -> board frozen.
+    -- Reset the chip on teardown so it runs the flashed firmware again.
+    --
+    -- The probe-rs dap-server holds the debug probe (ST-Link) until it has fully
+    -- exited, and that release timing varies, so retry until the probe is actually
+    -- free (exit code 0) instead of guessing a single delay. The guard ensures
+    -- only one reset cycle runs even if several teardown events fire.
+    local resetting = false
+    local function reset_board()
+      if resetting then
+        return
+      end
+      resetting = true
+      local attempts = 0
+      local function try()
+        attempts = attempts + 1
+        vim.fn.jobstart({ "probe-rs", "reset", "--chip", chip }, {
+          on_exit = function(_, code)
+            if code == 0 then
+              resetting = false -- probe acquired, chip reset and running
+            elseif attempts < 20 then
+              vim.defer_fn(try, 250) -- probe still held by dap-server; retry
+            else
+              resetting = false
+              vim.schedule(function()
+                vim.notify(
+                  "probe-rs reset failed after " .. attempts .. " attempts (is the board connected?)",
+                  vim.log.levels.WARN
+                )
+              end)
+            end
+          end,
+        })
+      end
+      try()
+    end
+    -- A disconnect response is sent for both :DapDisconnect and :DapTerminate;
+    -- event_terminated is kept for adapter-side exits. The guard above makes
+    -- multiple firings safe (only the first starts a reset cycle).
+    dap.listeners.after.event_terminated["probe_rs_reset"] = reset_board
+    dap.listeners.after.disconnect["probe_rs_reset"] = reset_board
+  end,
+}

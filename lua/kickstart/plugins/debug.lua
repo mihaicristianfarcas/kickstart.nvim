@@ -106,6 +106,13 @@ return {
       --    Don't feel like these are good choices.
       icons = { expanded = '▾', collapsed = '▸', current_frame = '*' },
       controls = {
+        -- The clickable winbar controls call enable_controls(elements['repl']),
+        -- but that element isn't registered when toggle() runs here, so dap-ui
+        -- v4.0.0 crashes with "attempt to index local 'element' (a nil value)"
+        -- (controls.lua:14). We drive debugging with the F-keys below, so the
+        -- winbar buttons aren't needed -- disable them to avoid the crash.
+        enabled = false,
+        element = 'repl',
         icons = {
           pause = '⏸',
           play = '▶',

@@ -17,14 +17,9 @@ return {
           end
         end,
         direction = 'vertical',
-        open_mapping = [[<leader>\]],
-        -- Only map in normal mode. insert_mappings=false stops <Space>\ from
-        -- being an insert-mode mapping, which otherwise makes every <Space>
-        -- (the leader) stall for 'timeoutlen' while typing. terminal_mappings=
-        -- false keeps terminal mode free too. Close from inside a terminal with
-        -- <Esc><Esc> (to normal mode) then <leader>\.
-        insert_mappings = false,
-        terminal_mappings = false,
+        open_mapping = [[<C-\>]],
+        insert_mappings = true,
+        terminal_mappings = true,
         shade_terminals = false,
       }
 

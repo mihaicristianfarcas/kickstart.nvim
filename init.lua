@@ -525,20 +525,19 @@ require('lazy').setup({
       -- quotes). n_lines caps how far it searches for a matching pair.
       require('mini.ai').setup { n_lines = 500 }
 
-      -- mini.surround: add/delete/replace surrounding pairs, under the `gs` prefix
-      -- (the bare `s` is left to flash.nvim's jump). Examples:
-      --   gsaiw)  surround inner-word with parentheses
-      --   gsd)    delete surrounding parentheses
-      --   gsr)(   replace surrounding ) with (
+      -- mini.surround: add/delete/replace surrounding pairs, under the `s` prefix
+      --   saiw)  surround inner-word with parentheses
+      --   sd)    delete surrounding parentheses
+      --   sr)(   replace surrounding ) with (
       require('mini.surround').setup {
         mappings = {
-          add = 'gsa',
-          delete = 'gsd',
-          find = 'gsf',
-          find_left = 'gsF',
-          highlight = 'gsh',
-          replace = 'gsr',
-          update_n_lines = 'gsn',
+          add = 'sa',
+          delete = 'sd',
+          find = 'sf',
+          find_left = 'sF',
+          highlight = 'sh',
+          replace = 'sr',
+          update_n_lines = 'sn',
         },
       }
 

@@ -31,6 +31,7 @@ return {
       local select = require 'nvim-treesitter-textobjects.select'
       local move = require 'nvim-treesitter-textobjects.move'
       local swap = require 'nvim-treesitter-textobjects.swap'
+      local ts_repeat = require 'nvim-treesitter-textobjects.repeatable_move'
 
       -- ── Select (operator-pending + visual) ────────────────────────────────
       -- Keys are deliberately off mini.ai's `af`/`aa`/`at` and use `m` for
@@ -98,9 +99,30 @@ return {
         end
       end
 
-      -- Note: `;`/`,` and `f`/`F`/`t`/`T` repeat are intentionally NOT remapped
-      -- to nvim-treesitter-textobjects' repeatable_move, because flash.nvim's
-      -- char mode already owns those keys.
+      -- `s` still works as `cl` in normal mode; in x/o mode it selects a statement.
+      -- `r` still works as "replace" in normal mode; in x/o mode it selects return.
+      vim.keymap.set({ 'x', 'o' }, 's', function()
+        select.select_textobject('@statement.outer', 'textobjects')
+      end, { desc = 'Select [s]tatement' })
+      vim.keymap.set({ 'x', 'o' }, 'S', function()
+        select.select_textobject('@local.scope', 'locals')
+      end, { desc = 'Select [S]cope' })
+      vim.keymap.set({ 'x', 'o' }, 'r', function()
+        select.select_textobject('@return.outer', 'textobjects')
+      end, { desc = 'Select [r]eturn value' })
+      vim.keymap.set({ 'x', 'o' }, 'R', function()
+        select.select_textobject('@call.outer', 'textobjects')
+      end, { desc = 'Select call e[R]pression' })
+
+      -- ── Repeat last move (; / ,) ────────────────────────────────────────────
+      -- Repeats treesitter textobject moves AND built-in f/F/t/T motions.
+      -- f/F/t/T are mapped with `expr = true` so the module can track them.
+      vim.keymap.set({ 'n', 'x', 'o' }, ';', ts_repeat.repeat_last_move_next, { desc = 'Repeat last move (forward)' })
+      vim.keymap.set({ 'n', 'x', 'o' }, ',', ts_repeat.repeat_last_move_previous, { desc = 'Repeat last move (backward)' })
+      vim.keymap.set('n', 'f', ts_repeat.builtin_f_expr, { expr = true, desc = 'f with repeat tracking' })
+      vim.keymap.set('n', 'F', ts_repeat.builtin_F_expr, { expr = true, desc = 'F with repeat tracking' })
+      vim.keymap.set('n', 't', ts_repeat.builtin_t_expr, { expr = true, desc = 't with repeat tracking' })
+      vim.keymap.set('n', 'T', ts_repeat.builtin_T_expr, { expr = true, desc = 'T with repeat tracking' })
     end,
   },
 }
