@@ -17,7 +17,7 @@ return {
           end
         end,
         direction = 'vertical',
-        open_mapping = [[<C-\>]],
+        open_mapping = [[<M-\>]],
         insert_mappings = true,
         terminal_mappings = true,
         shade_terminals = false,
